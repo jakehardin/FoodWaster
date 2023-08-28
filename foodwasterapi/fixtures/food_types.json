@@ -1,0 +1,16 @@
+[
+  {
+      "model": "foodwasterapi.foodtype",
+      "pk": 1,
+      "fields": {
+          "name": "Meat"
+      }
+  },
+  {
+    "model": "foodwasterapi.foodtype",
+    "pk": 2,
+    "fields": {
+        "name": "Herbs"
+    }
+}
+]
