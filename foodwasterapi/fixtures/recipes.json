@@ -1,0 +1,22 @@
+[
+  {
+      "model": "foodwasterapi.recipe",
+      "pk": 1,
+      "fields": {
+          "name": "Lasagnas",
+          "description": "lasagna recipe.",
+          "completed": false
+
+      }
+  },
+  {
+    "model": "foodwasterapi.recipe",
+    "pk": 2,
+    "fields": {
+        "name": "Lime Crema",
+        "description": "lime crema recipe.",
+        "completed": false
+
+    }
+}
+]

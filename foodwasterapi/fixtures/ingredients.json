@@ -1,0 +1,24 @@
+[
+  {
+      "model": "foodwasterapi.ingredient",
+      "pk": 1,
+      "fields": {
+          "name": "Limes",
+          "food_type": 1,
+          "date": "2023-07-30",
+          "uid": "uid"
+
+      }
+  },
+  {
+    "model": "foodwasterapi.ingredient",
+    "pk": 2,
+    "fields": {
+        "name": "Ground Beef",
+        "food_type": 2,
+        "date": "2023-07-31",
+        "uid": "uid"
+
+    }
+}
+]
