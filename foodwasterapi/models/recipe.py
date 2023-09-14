@@ -6,4 +6,6 @@ class Recipe(models.Model):
     """
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=50)
+    uid = models.CharField(max_length=100)
+    image = models.URLField()
     completed = models.BooleanField(null=True, blank=True)

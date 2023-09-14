@@ -4,5 +4,5 @@ from .ingredient import Ingredient
 
 class RecipeIngredient(models.Model):
 
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient_id = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)

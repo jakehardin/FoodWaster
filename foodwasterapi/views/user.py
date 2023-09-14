@@ -1,71 +1,44 @@
-import sqlite3
-import json
+"""View module for handling requests about users"""
+from django.http import HttpResponseServerError
+from rest_framework.viewsets import ViewSet
+from rest_framework.response import Response
+from rest_framework import serializers, status
+from foodwasterapi.models import User
 from datetime import datetime
 
-def login_user(user):
-    """Checks for the user in the database
+class UserView(ViewSet):
+    """Users view"""
+    
+    def list(self, request):
+        """Handle GET requests to get all users
+        Returns:
+            Response -- JSON serialized list of users
+        """
+        user = User.objects.all()
+        serializer = UserSerializer(user, many=True)
+        return Response(serializer.data)
+      
+    def retrieve(self, request, pk):
+      try:
+        user = User.objects.get(pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+      except User.DoesNotExist as ex:
+            return Response({'message': ex.args[0]}, status=status.HTTP_404_NOT_FOUND)
+          
+    def update(self, request, pk):
+        user = User.objects.get(pk=pk)
+        user.name = request.data["name"]
+        user.profile_image_url=request.data["profile_image_url"]
+        
+        user.save()
 
-    Args:
-        user (dict): Contains the username and password of the user trying to login
-
-    Returns:
-        json string: If the user was found will return valid boolean of True and the user's id as the token
-                     If the user was not found will return valid boolean False
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+      
+class UserSerializer(serializers.ModelSerializer):
+    """JSON serializer for categories
     """
-    with sqlite3.connect('./db.sqlite3') as conn:
-        conn.row_factory = sqlite3.Row
-        db_cursor = conn.cursor()
-
-        db_cursor.execute("""
-            select id, username
-            from Users
-            where username = ?
-            and password = ?
-        """, (user['username'], user['password']))
-
-        user_from_db = db_cursor.fetchone()
-
-        if user_from_db is not None:
-            response = {
-                'valid': True,
-                'token': user_from_db['id']
-            }
-        else:
-            response = {
-                'valid': False
-            }
-
-        return json.dumps(response)
-
-
-def create_user(user):
-    """Adds a user to the database when they register
-
-    Args:
-        user (dictionary): The dictionary passed to the register post request
-
-    Returns:
-        json string: Contains the token of the newly created user
-    """
-    with sqlite3.connect('./db.sqlite3') as conn:
-        conn.row_factory = sqlite3.Row
-        db_cursor = conn.cursor()
-
-        db_cursor.execute("""
-        Insert into Users (first_name, last_name, username, email, password, bio, created_on, active) values (?, ?, ?, ?, ?, ?, ?, 1)
-        """, (
-            user['first_name'],
-            user['last_name'],
-            user['username'],
-            user['email'],
-            user['password'],
-            user['bio'],
-            datetime.now()
-        ))
-
-        id = db_cursor.lastrowid
-
-        return json.dumps({
-            'token': id,
-            'valid': True
-        })
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'profile_image_url')
+        depth = 1

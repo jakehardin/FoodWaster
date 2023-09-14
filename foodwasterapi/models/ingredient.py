@@ -6,4 +6,5 @@ class Ingredient(models.Model):
     name = models.CharField(max_length=50)
     food_type = models.ForeignKey(FoodType, on_delete=models.CASCADE)
     uid = models.CharField(max_length=50)
+    image = models.URLField()
     date = models.DateField()

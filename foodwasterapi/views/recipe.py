@@ -3,8 +3,8 @@ from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from foodwasterapi.models import Recipe
-
+from foodwasterapi.models import Recipe, RecipeIngredient
+from rest_framework.decorators import action
 class RecipeView(ViewSet):
     """recipe view"""
 
@@ -25,8 +25,11 @@ class RecipeView(ViewSet):
         Returns:
             Response -- JSON serialized list of category
         """
-        recipe = Recipe.objects.all()
-        serializer = RecipeSerializer(recipe, many=True)
+        recipes = Recipe.objects.all()
+        uid = request.query_params.get('uid', None)
+        if uid is not None:
+            recipes = recipes.filter(uid=uid)
+        serializer = RecipeSerializer(recipes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
@@ -36,42 +39,54 @@ class RecipeView(ViewSet):
         """
 
         recipe = Recipe.objects.create(
-            label=request.data["label"],
+            name=request.data["name"],
+            description=request.data["description"],
+            uid=request.data["uid"],
+            completed=request.data["completed"],
         )
         serializer = RecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    # def update(self, request, pk):
-    #     """Handle PUT requests for a category
+    def update(self, request, pk):
+        """Handle PUT requests for a category
 
-    #     Returns:
-    #         Response -- Empty body with 204 status code
-    #     """
+        Returns:
+            Response -- Empty body with 204 status code
+        """
 
-    #     category = Category.objects.get(pk=pk)
-    #     category.label = request.data["label"]
-    #     category.description = request.data["description"]
-    #     category.save()
+        recipe = Recipe.objects.get(pk=pk)
+        recipe.name = request.data["name"]
+        recipe.description = request.data["description"]
+        recipe.completed = request.data["completed"]
+        recipe.save()
 
-    #     serializer = CategorySerializer(category)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = RecipeSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # def destroy(self, request, pk):
+    def destroy(self, request, pk):
 
-    #     category = Category.objects.get(pk=pk)
-    #     category.delete()
+        recipe = Recipe.objects.get(pk=pk)
+        recipe.delete()
 
-    #     return Response(None, status=status.HTTP_204_NO_CONTENT)
-
-    # def popular_genres(self, request):
-    #     """
-    #     Retrieve a list of popular genres based on the number of songs associated with each genre
-    #     """
-
-    #     genres = Genre.objects.annotate(song_count=Count('songs')).order_by('-song_count')[:1]
-
-    #     serializer = SongsgitGenreSerializer(genres, many=True)
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(methods=['get'], detail=True)
+    def get_ingredients(self, request, pk):
+        """Get the books for the customer"""
+        try:
+            recipe_ingredients = RecipeIngredient.objects.filter(recipe_id = pk)
+            serializer = RecipeIngredientSerializer(recipe_ingredients, many=True)
+            return Response(serializer.data)
+        except RecipeIngredient.DoesNotExist:
+            return Response(False)
+        
+class RecipeIngredientSerializer(serializers.ModelSerializer):
+    """JSON serializer for categories
+    """
+    class Meta:
+        model = RecipeIngredient
+        fields = ('id', 'recipe', 'ingredient')
+        depth = 1
 
 class RecipeSerializer(serializers.ModelSerializer):
     """JSON serializer for categories
@@ -79,3 +94,4 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'description', 'completed')
+        depth = 1
